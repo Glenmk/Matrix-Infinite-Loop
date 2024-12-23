@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Rain</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            background-color: #070710;
+            font-family: monospace;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #face-canvas {
+            background-color: transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        #fullscreen-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="face-canvas"></canvas>
+    <button id="fullscreen-btn">
+        <i class="fas fa-expand"></i> Fullscreen
+    </button>
+    <script>
+        const canvas = document.getElementById('face-canvas');
+        const ctx = canvas.getContext('2d');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+        const resizeCanvas = () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        const bitSize = 15; // Increased font size
+        const columns = Math.floor(canvas.width / bitSize) * 2; // Increased column count
+        const drops = [];
+
+        // Initialize drops with more columns
+        for (let i = 0; i < columns; i++) {
+          drops[i] = {
+            y: Math.floor(Math.random() * -canvas.height), // Start above the canvas
+            speed: 5 + Math.random() * 5 // Vary the speed slightly (from 5 to 10)
+          };
+        }
+
+        function draw() {
+          ctx.fillStyle = 'rgba(7, 7, 16, 0.05)'; // Reduced alpha for longer trails
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          ctx.fillStyle = '#00ff00'; // Bright green color
+          ctx.font = `${bitSize}px monospace`;
+
+          for (let i = 0; i < drops.length; i++) {
+            const char = Math.random() > 0.5 ? '1' : '0';
+            const x = i * bitSize / 2; // Halved the distance between characters
+            const y = drops[i].y;
+
+            ctx.fillText(char, x, y);
+
+            // Reset drop to top with a random delay
+            if (y > canvas.height && Math.random() > 0.975) {
+              drops[i].y = Math.floor(Math.random() * -canvas.height / 2); // Start at a random position above
+            }
+
+            drops[i].y += drops[i].speed;
+          }
+        }
+
+        setInterval(draw, 33); // Slower interval for smoother animation
+
+        // Handle fullscreen toggle 
+        let isFullscreen = false;
+        fullscreenBtn.addEventListener('click', () => {
+            if (!isFullscreen) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) { // Safari
+                    document.documentElement.webkitRequestFullscreen();
+                } else if (document.documentElement.msRequestFullscreen) { // IE11
+                    document.documentElement.msRequestFullscreen();
+                }
+                fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> Exit Fullscreen';
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) { // Safari
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) { // IE11
+                    document.msExitFullscreen();
+                }
+                fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i> Fullscreen';
+            }
+            isFullscreen = !isFullscreen;
+        });
+    </script>
+</body>
+</html>
